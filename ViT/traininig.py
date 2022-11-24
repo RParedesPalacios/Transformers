@@ -15,7 +15,7 @@ from ViT import ViT
 
 
 # Some important parameters
-bs = 256 # batch size
+bs = 512 # batch size
 img_size = 256 #image size (square)
 epochs = 100 # total training epochs
 rand_aug = True # use random augmentation
@@ -23,7 +23,8 @@ img_channels=3 # number of image channels
 patch_size= 16 # patch size to split image
 d_model=256 # dimensionality transformer representation
 N=4 # Number of transformers blocks
-heads=4 # Number of transformer block heads
+heads=4 # Number of transformer block heads 
+
 
 # computing device
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -71,10 +72,10 @@ if 'cuda' in device:
 
 # Loss is CE
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.0001)
+optimizer = optim.AdamW(net.parameters(), lr=0.0001)
     
-# use cosine scheduling
-scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
+# use reduce on plateau
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
 ##### Training
 def train():
@@ -97,7 +98,7 @@ def train():
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        print('\r %d %d -- Loss: %.1f | Acc: %.1f%%' % (batch_idx+1, len(trainloader), train_loss/(batch_idx+1), 100.*correct/total), end="")
+        print('\r %d %d -- Loss: %.3f | Acc: %.2f%%' % (batch_idx+1, len(trainloader), train_loss/(batch_idx+1), 100.*correct/total), end="")
 
     return train_loss/(batch_idx+1),100.*correct/total
 
@@ -119,15 +120,16 @@ def test():
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             
-            print('\r %d %d -- Loss: %.1f | Acc: %.1f%%' % (batch_idx+1, len(testloader), test_loss/(batch_idx+1), 100.*correct/total), end="")
+            print('\r %d %d -- Loss: %.3f | Acc: %.2f%%' % (batch_idx+1, len(testloader), test_loss/(batch_idx+1), 100.*correct/total), end="")
     return test_loss/(batch_idx+1),100.*correct/total
             
 
 net.cuda()
 for epoch in range(epochs):
     print('\n============ Epoch: %d ==============' % epoch)
-    
-    print("Training")
+    print()
+
+    print("Training, lr= %f" %(optimizer.param_groups[0]['lr']))
     trainloss,acc = train()
     print("")
 
@@ -135,6 +137,7 @@ for epoch in range(epochs):
     val_loss, acc = test()
     print("")
 
-    scheduler.step() # step cosine scheduling
+    scheduler.step(trainloss) # step scheduling
+    
     
  
