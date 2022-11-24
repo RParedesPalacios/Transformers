@@ -52,7 +52,9 @@ class ViT(nn.Module):
         self.patch_size=patch_size
         self.d_model=d_model
         self.N = N
+
         assert img_size % patch_size == 0, 'Image dimensions must be divisible by the patch size.'
+        
         self.patch_num=(img_size//patch_size)**2
 
         self.embed = PatchEmbedding(img_channels, patch_size, d_model)
