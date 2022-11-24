@@ -35,7 +35,7 @@ import copy
 def get_clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
-class TransformerEncoderBlock(nn.Sequential):
+class TransformerBlock(nn.Sequential):
     def __init__(self,emb_size, heads,
                  drop_p: float = 0.1,
                  forward_expansion: int = 4,
@@ -56,12 +56,12 @@ class TransformerEncoderBlock(nn.Sequential):
             ))
 
 
-class TransformerEncoder(nn.Module):
+class ViT(nn.Module):
     def __init__(self, patch_num, patch_dim, d_model, N, heads):
         super().__init__()
         self.N = N
         self.embed = PatchEmbedding(d_model, patch_num, patch_dim)
-        self.layers = get_clones(TransformerEncoderBlock(d_model, heads), N)
+        self.layers = get_clones(TransformerBlock(d_model, heads), N)
     def forward(self, src):
         x = self.embed(src)
         for i in range(self.N):
