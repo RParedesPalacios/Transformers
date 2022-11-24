@@ -121,6 +121,19 @@ def test():
             correct += predicted.eq(targets).sum().item()
             
             print('\r %d %d -- Loss: %.3f | Acc: %.2f%%' % (batch_idx+1, len(testloader), test_loss/(batch_idx+1), 100.*correct/total), end="")
+
+    # Save checkpoint.
+    acc = 100.*correct/total
+    if acc > best_acc:
+        print('Saving..')
+        state = {"model": net.state_dict(),
+              "optimizer": optimizer.state_dict(),
+              "scaler": scaler.state_dict()}
+        if not os.path.isdir('checkpoint'):
+            os.mkdir('checkpoint')
+        torch.save(state, './checkpoint/'+args.net+'-{}-ckpt.t7'.format(4))
+        best_acc = acc
+
     return test_loss/(batch_idx+1),100.*correct/total
             
 
