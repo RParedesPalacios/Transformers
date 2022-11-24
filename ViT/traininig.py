@@ -5,19 +5,25 @@ import torch.optim as optim
 import torch.backends.cudnn as cudnn
 import numpy as np
 
+# TorchVision and data augmentation
 import torchvision
-import time
 import torchvision.transforms as transforms
 from randomaug import RandAugment
 
-import progress_bar
+# Models
 from ViT import ViT
 
 
+# Some important parameters
 bs = 256 # batch size
-imgsize = 256 #image size (square)
+img_size = 256 #image size (square)
 epochs = 100 # total training epochs
 rand_aug = True # use random augmentation
+img_channels=3 # number of image channels
+patch_size= 16 # patch size to split image
+d_model=256 # dimensionality transformer representation
+N=4 # Number of transformers blocks
+heads=4 # Number of transformer block heads
 
 # computing device
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -25,14 +31,14 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # Data augmentation
 transform_train = transforms.Compose([
     transforms.RandomCrop(32, padding=4),
-    transforms.Resize(imgsize),
+    transforms.Resize(img_size),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
 transform_test = transforms.Compose([
-    transforms.Resize(imgsize),
+    transforms.Resize(img_size),
     transforms.ToTensor(),
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
@@ -54,7 +60,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False,
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 ## Model
-net=ViT(img_size=256, img_channels=3, patch_size= 16, d_model=256, N=4, heads=4,num_classes=len(classes))
+net=ViT(img_size, img_channels, patch_size, d_model, N, heads, len(classes))
 
 # For Multi-GPU
 if 'cuda' in device:
@@ -119,11 +125,12 @@ def test():
 
 net.cuda()
 for epoch in range(epochs):
-    start = time.time()
     print('\n============ Epoch: %d ==============' % epoch)
+    
     print("Training")
     trainloss,acc = train()
     print("")
+
     print("Validation")
     val_loss, acc = test()
     print("")
