@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
 import numpy as np
+import os
 
 # TorchVision and data augmentation
 import torchvision
@@ -24,6 +25,7 @@ patch_size= 16 # patch size to split image
 d_model=256 # dimensionality transformer representation
 N=4 # Number of transformers blocks
 heads=4 # Number of transformer block heads 
+load_check = True # to load a checkpoint
 
 
 # computing device
@@ -61,19 +63,25 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False,
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 ## Model
+best_acc = 0.0
 net=ViT(img_size, img_channels, patch_size, d_model, N, heads, len(classes))
+net.to(device)
 
-# For Multi-GPU
-if 'cuda' in device:
-    print(device)
-    print("using data parallel")
-    net = torch.nn.DataParallel(net) # make parallel
-    cudnn.benchmark = True
+if load_check:
+    print('==> Resuming from checkpoint..')
+    assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
+    checkpoint = torch.load('./checkpoint/vit-ckpt.t7')
+    net.load_state_dict(checkpoint['model_state_dict'])
+    best_acc = checkpoint['acc']
+
 
 # Loss is CE
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.AdamW(net.parameters(), lr=0.0001)
-    
+
+if load_check:
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
 # use reduce on plateau
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
@@ -125,13 +133,15 @@ def test():
     # Save checkpoint.
     acc = 100.*correct/total
     if acc > best_acc:
-        print('Saving..')
-        state = {"model": net.state_dict(),
-              "optimizer": optimizer.state_dict(),
-              "scaler": scaler.state_dict()}
+        print("")
+        print('Saving checkpoint..')
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/'+args.net+'-{}-ckpt.t7'.format(4))
+        torch.save({
+            'model_state_dict': net.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': test_loss,
+            'acc': acc}, './checkpoint/vit-ckpt.t7')
         best_acc = acc
 
     return test_loss/(batch_idx+1),100.*correct/total
@@ -146,7 +156,7 @@ for epoch in range(epochs):
     trainloss,acc = train()
     print("")
 
-    print("Validation")
+    print("Validation, best acc=%f" %(best_acc))
     val_loss, acc = test()
     print("")
 
