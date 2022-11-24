@@ -14,18 +14,21 @@ from randomaug import RandAugment
 # Models
 from ViT import ViT
 
+# Data
+from getdata import getData
+
 
 # Some important parameters
-bs = 512 # batch size
-img_size = 256 #image size (square)
-epochs = 100 # total training epochs
+bs = 128 # batch size
+img_size = 32 #image size (square)
+epochs = 200 # total training epochs
 rand_aug = True # use random augmentation
 img_channels=3 # number of image channels
-patch_size= 16 # patch size to split image
-d_model=256 # dimensionality transformer representation
-N=4 # Number of transformers blocks
-heads=4 # Number of transformer block heads 
-load_check = True # to load a checkpoint
+patch_size= 4 # patch size (square)
+d_model=384 # dimensionality transformer representation
+N=7 # Number of transformers blocks
+heads=12 # Number of transformer block heads 
+load_check = False # to load a checkpoint
 
 
 # computing device
@@ -52,21 +55,13 @@ if rand_aug:
     M = 14
     transform_train.transforms.insert(0, RandAugment(N, M))
 
-# Download dataset and define data loader
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=bs, shuffle=True, num_workers=8)
-
-testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
-testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=8)
-
-# CIFAR classes
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+trainset,trainloader,testset,testloader,num_classes=getData("CIFAR100", bs, transform_train, transform_test)
 
 ## Model
-best_acc = 0.0
-net=ViT(img_size, img_channels, patch_size, d_model, N, heads, len(classes))
+net=ViT(img_size, img_channels, patch_size, d_model, N, heads, num_classes)
 net.to(device)
 
+best_acc = 0.0
 if load_check:
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
@@ -77,13 +72,14 @@ if load_check:
 
 # Loss is CE
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.AdamW(net.parameters(), lr=0.0001)
+optimizer = optim.Adam(net.parameters(), lr=0.00005)
 
 if load_check:
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
 # use reduce on plateau
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
+#scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs, eta_min=1e-5)
 
 ##### Training
 def train():
@@ -147,7 +143,6 @@ def test():
     return test_loss/(batch_idx+1),100.*correct/total
             
 
-net.cuda()
 for epoch in range(epochs):
     print('\n============ Epoch: %d ==============' % epoch)
     print()
@@ -160,7 +155,8 @@ for epoch in range(epochs):
     val_loss, acc = test()
     print("")
 
-    scheduler.step(trainloss) # step scheduling
+    #scheduler.step(trainloss) # step scheduling
+    scheduler.step() # step scheduling
     
     
  

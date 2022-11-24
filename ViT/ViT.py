@@ -57,6 +57,12 @@ class ViT(nn.Module):
         
         self.patch_num=(img_size//patch_size)**2
 
+        print("=============================================")
+        print("Image size %d x %d" %(img_size,img_size))
+        print("Building ViT with %d patches of %d x %d" %(self.patch_num,patch_size,patch_size))
+        print("Transformer block dim",self.d_model)
+        print("=============================================")
+
         self.embed = PatchEmbedding(img_channels, patch_size, d_model)
         self.layers = get_clones(TransformerBlock(d_model, heads), N)
         self.mlp_head = nn.Sequential(
