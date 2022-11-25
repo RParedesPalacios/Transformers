@@ -11,7 +11,7 @@ from einops.layers.torch import Rearrange
 #                                         #
 # Output: (b,patches,emb_size)            #
 # patches are extracted  and              #
-# projected to emb_sizewith a conv2d      #
+# projected to emb_size with a conv2d     #
 # and add position embedding              #
 ###########################################
 class PatchEmbedding(nn.Module):
