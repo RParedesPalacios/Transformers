@@ -54,6 +54,7 @@ class ViT(nn.Module):
         self.N = N
 
         assert img_size % patch_size == 0, 'Image dimensions must be divisible by the patch size.'
+        assert d_model % heads == 0, 'Transformer dim must be divisible by the number of heads.'
         
         self.patch_num=(img_size//patch_size)**2
 
@@ -63,7 +64,7 @@ class ViT(nn.Module):
         print("Transformer block dim",self.d_model)
         print("=============================================")
 
-        self.embed = PatchEmbedding(img_channels, patch_size, d_model)
+        self.embed = PatchEmbedding(img_channels, patch_size, self.patch_num, d_model)
         self.layers = get_clones(TransformerBlock(d_model, heads), N)
         self.mlp_head = nn.Sequential(
             nn.LayerNorm(d_model),

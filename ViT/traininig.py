@@ -21,14 +21,14 @@ from getdata import getAugmentation
 
 # Some important parameters
 bs = 128 # batch size
-img_size = 256 #image size (square)
-epochs = 200 # total training epochs
-rand_aug = True # use random augmentation
+img_size = 32 # resize to this image size (square)
 img_channels=3 # number of image channels
-patch_size= 16 # patch size (square)
+epochs = 200 # total training epochs
+rand_aug = False # use random augmentation
+patch_size= 4 # patch size (square)
 d_model=384 # dimensionality transformer representation
-N=6 # Number of transformers blocks
-heads=8 # Number of transformer block heads 
+N=8 # Number of transformers blocks
+heads=12 # Number of transformer block heads 
 load_check = False # to load a checkpoint
 
 
@@ -38,7 +38,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # Data augmentation
 transform_train,transform_test=getAugmentation(img_size,rand_aug)
 
-trainset,trainloader,testset,testloader,num_classes=getData("FOOD101", bs, transform_train, transform_test)
+# Dataset and loaders
+trainset,trainloader,testset,testloader,num_classes=getData("CIFAR10", bs, transform_train, transform_test)
 
 ## Model
 net=ViT(img_size, img_channels, patch_size, d_model, N, heads, num_classes)
@@ -60,7 +61,7 @@ optimizer = optim.Adam(net.parameters(), lr=0.00005)
 if load_check:
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-# use reduce on plateau
+# use ReduceOnPlateau or CosineAnnealing
 #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs, eta_min=1e-5)
 
