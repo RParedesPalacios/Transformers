@@ -13,6 +13,7 @@ import torchvision.transforms as transforms
 
 # Models
 from ViT import ViT
+from Swin import SwinTransformer
 
 # Data
 from getdata import getData
@@ -25,11 +26,16 @@ img_size = 32 # resize to this image size (square)
 img_channels=3 # number of image channels
 epochs = 200 # total training epochs
 rand_aug = True # use random augmentation
-patch_size= 4 # patch size (square)
-d_model=384 # dimensionality transformer representation
+patch_size= 8 # patch size (square)
+d_model=96 # dimensionality transformer representation
 N=8 # Number of transformers blocks
 heads=12 # Number of transformer block heads 
 load_check = False # to load a checkpoint
+
+### For Swin
+num_heads=[3, 6, 12]
+depths=[2, 4, 6]
+window_size=4
 
 
 # computing device
@@ -42,7 +48,24 @@ transform_train,transform_test=getAugmentation(img_size,rand_aug)
 trainset,trainloader,testset,testloader,num_classes=getData("CIFAR10", bs, transform_train, transform_test)
 
 ## Model
-net=ViT(img_size, img_channels, patch_size, d_model, N, heads, num_classes)
+'''
+net=ViT(img_size, 
+        img_channels, 
+        patch_size, 
+        d_model,
+        N, 
+        heads, 
+        num_classes)
+'''
+
+net=SwinTransformer(img_size=img_size, 
+                    patch_size=patch_size,
+                    in_chans=img_channels, 
+                    window_size=window_size, 
+                    embed_dim=d_model, 
+                    num_classes=num_classes,
+                    num_heads=num_heads,
+                    depths=depths)
 net.to(device)
 
 best_acc = 0.0
