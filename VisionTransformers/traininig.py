@@ -21,19 +21,28 @@ from getdata import getAugmentation
 
 
 # Some important parameters
-bs = 128 # batch size
+
+# Image params
 img_size = 32 # resize to this image size (square)
 img_channels=3 # number of image channels
-epochs = 200 # total training epochs
+
+# Training params
+bs = 128 # batch size
+epochs = 500 # total training epochs
 rand_aug = True # use random augmentation
-patch_size= 8 # patch size (square)
-d_model=96 # dimensionality transformer representation
-N=8 # Number of transformers blocks
-heads=12 # Number of transformer block heads 
 load_check = False # to load a checkpoint
 
-### For Swin
-num_heads=[3, 6, 12]
+# For Transformers 
+patch_size= 4 # patch size (square)
+d_model=96 # dimensionality transformer representation
+
+
+# ViT
+N=8 # Number of transformers blocks
+heads=8 # Number of transformer block heads 
+
+### For SWin
+num_heads=[8, 8, 8]
 depths=[2, 4, 6]
 window_size=4
 
@@ -45,7 +54,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 transform_train,transform_test=getAugmentation(img_size,rand_aug)
 
 # Dataset and loaders
-trainset,trainloader,testset,testloader,num_classes=getData("CIFAR10", bs, transform_train, transform_test)
+dataset="CIFAR10"
+trainset,trainloader,testset,testloader,num_classes=getData(dataset, bs, transform_train, transform_test)
 
 ## Model
 '''
