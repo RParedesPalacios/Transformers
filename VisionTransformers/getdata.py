@@ -8,7 +8,6 @@ from randomaug import RandAugment
 ## CIFAR100: 32x32 100 classes
 ## FOOD101: 512x512(max) 101 classes
 ## FLOWERS102: small 102 classes
-## FER2013: 48x48 7 classes grayscale
 
 def getData(name, bs, transform_train, transform_test):
     if name=="CIFAR10":
