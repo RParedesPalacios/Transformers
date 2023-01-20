@@ -73,8 +73,8 @@ def getAugmentation(img_size,rand_aug):
 
     # RandAugment
     if rand_aug:
-        N = 2
-        M = 14
+        N = 3
+        M = 20
         transform_train.transforms.insert(0, RandAugment(N, M))
 
     return transform_train,transform_test

@@ -196,7 +196,7 @@ def augment_list():  # 16 oeprations and their ranges
         (Sharpness, 0.1, 1.9),
        # (ShearX, 0., 0.3),
        # (ShearY, 0., 0.3),
-        (CutoutAbs, 0, 40),
+        (Cutout, 0, 0.2),  
        # (TranslateXabs, 0., 100),
        # (TranslateYabs, 0., 100),
     ]
