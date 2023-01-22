@@ -59,6 +59,7 @@ data[["Image Index", "labels"]].rename(columns={"Image Index": "file_name"}).to_
 
 
 train_val_split = 0.05
+# https://huggingface.co/docs/datasets/image_load
 dataset = datasets.load_dataset(
     "imagefolder",
     data_dir=images_dir,
