@@ -76,6 +76,7 @@ feature_extractor = transformers.AutoFeatureExtractor.from_pretrained(
 )
 
 
+# https://huggingface.co/docs/transformers/tasks/image_classification
 class XRayTransform:
     """
     Transforms for pre-processing XRay data across a batch.
