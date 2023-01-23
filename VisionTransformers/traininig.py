@@ -23,11 +23,11 @@ from getdata import getAugmentation
 # Some important parameters
 
 # Image params
-img_size = 32 # resize to this image size (square)
+img_size = 128 # resize to this image size (square)
 img_channels=3 # number of image channels
 
 # Training params
-bs = 128 # batch size
+bs = 32 # batch size
 epochs = 500 # total training epochs
 rand_aug = True # use random augmentation
 load_check = False # to load a checkpoint
@@ -38,12 +38,12 @@ d_model=96 # dimensionality transformer representation
 
 
 # ViT
-N=8 # Number of transformers blocks
-heads=8 # Number of transformer block heads 
+N=10# Number of transformers blocks
+heads=16 # Number of transformer block heads 
 
 ### For SWin
-num_heads=[8, 8, 8]
-depths=[2, 4, 6]
+num_heads=[4, 6, 8, 12] # D/H = 24, 32, 48, 64
+depths=[2, 4, 6, 6]
 window_size=4
 
 
@@ -54,7 +54,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 transform_train,transform_test=getAugmentation(img_size,rand_aug)
 
 # Dataset and loaders
-dataset="CIFAR10"
+dataset="FOOD101"
 trainset,trainloader,testset,testloader,num_classes=getData(dataset, bs, transform_train, transform_test)
 
 ## Model
