@@ -84,7 +84,7 @@ class XRayTransform:
     def __init__(self):
         self.transforms = transforms.Compose([
             transforms.Lambda(lambda pil_img: pil_img.convert("RGB")),
-            transforms.Resize(feature_extractor.size),
+            transforms.Resize(224,224),
             transforms.ToTensor(),
             transforms.Normalize(mean=feature_extractor.image_mean, std=feature_extractor.image_std),
         ])

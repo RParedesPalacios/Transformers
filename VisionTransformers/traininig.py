@@ -42,6 +42,8 @@ N=10# Number of transformers blocks
 heads=16 # Number of transformer block heads 
 
 ### For SWin
+
+# D = 96 192 384 768
 num_heads=[4, 6, 8, 12] # D/H = 24, 32, 48, 64
 depths=[2, 4, 6, 6]
 window_size=4
